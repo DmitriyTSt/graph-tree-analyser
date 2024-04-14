@@ -6,6 +6,7 @@ import kotlin.math.ln
 data class Graph(
     val mapList: Map<Int, List<Int>>,
 ) {
+    val n: Int = mapList.size
 
     companion object {
         fun fromSparse6(codeSparse6: String): Graph {

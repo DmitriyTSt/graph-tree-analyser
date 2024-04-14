@@ -37,6 +37,24 @@ fun Graph.getComponents(): List<Graph> {
 }
 
 object TreeUtil {
+
+    fun bfs(g: Graph, source: Int): List<Int> {
+        val d = MutableList(g.n) { Int.MAX_VALUE }
+        d[source] = 0
+        val q = ArrayDeque<Int>()
+        q.addLast(source)
+        while (q.isNotEmpty()) {
+            val u = q.removeLast()
+            g.mapList[u].orEmpty().forEach { v ->
+                if (d[v] == Int.MAX_VALUE) {
+                    d[v] = d[u] + 1
+                    q.addLast(v)
+                }
+            }
+        }
+        return d
+    }
+
     fun getTreeCenter(g: Graph): Int {
         val actualVertexes = g.mapList.keys.toMutableSet()
         while (actualVertexes.size > 2) {

@@ -1,6 +1,8 @@
 package ru.dmitriyt.graphtreeanalyser.presentation
 
-import ru.dmitriyt.graphtreeanalyser.domain.model.GraphResult
+import ru.dmitriyt.graphtreeanalyser.data.repository.SolveRepository
+import ru.dmitriyt.graphtreeanalyser.domain.Logger
+import ru.dmitriyt.graphtreeanalyser.domain.SolveResult
 import ru.dmitriyt.graphtreeanalyser.domain.model.GraphTaskInfo
 import ru.dmitriyt.graphtreeanalyser.domain.model.Task
 import ru.dmitriyt.graphtreeanalyser.domain.model.TaskResult
@@ -14,8 +16,10 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class BlockingSolver(
     private val isMulti: Boolean,
+    private val n: Int,
     private val input: BlockingSolverInput,
     private val graphTaskInfo: GraphTaskInfo,
+    private val partSize: Int,
 ) {
 
     private val taskId = AtomicInteger(0)
@@ -28,7 +32,12 @@ class BlockingSolver(
     private var startTime = 0L
     private var endTime = 0L
 
-    suspend fun solve(): Result = suspendCoroutine {
+    suspend fun solve(): SolveResult = suspendCoroutine {
+        val cachedResult = SolveRepository.get(graphTaskInfo, n)
+        if (cachedResult != null) {
+            it.resume(cachedResult)
+            return@suspendCoroutine
+        }
         val solver = if (isMulti) {
             MultiThreadSolver(graphTaskInfo)
         } else {
@@ -37,7 +46,7 @@ class BlockingSolver(
         startTime = System.currentTimeMillis()
         solver.run(
             inputProvider = {
-                val graphs = input.provide()
+                val graphs = input.provide(partSize)
                 if (graphs.isNotEmpty()) {
                     val newTaskId = taskId.incrementAndGet()
                     total.getAndAdd(graphs.size)
@@ -58,7 +67,7 @@ class BlockingSolver(
             onFinish = {
                 if (total.get() == processedGraphs.get() && !isStartFinishing.getAndSet(true)) {
                     endTime = System.currentTimeMillis()
-                    println(
+                    Logger.d(
                         """
                         ----------
                         Task $graphTaskInfo
@@ -69,29 +78,20 @@ class BlockingSolver(
                     )
                     val result = when (graphTaskInfo) {
                         is GraphTaskInfo.Condition -> {
-                            Result.Condition(
+                            SolveResult.Condition(
                                 graphs = taskResults.filterIsInstance<TaskResult.Graphs>().flatMap { it.graphs },
                             )
                         }
                         is GraphTaskInfo.Invariant -> {
-                            Result.Invariant(
+                            SolveResult.Invariant(
                                 invariants = taskResults.filterIsInstance<TaskResult.Invariant>().flatMap { it.results },
                             )
                         }
                     }
+                    SolveRepository.set(graphTaskInfo, n, result)
                     it.resume(result)
                 }
             }
         )
-    }
-
-    sealed interface Result {
-        data class Condition(
-            val graphs: List<String>,
-        ) : Result
-
-        data class Invariant(
-            val invariants: List<GraphResult>,
-        ) : Result
     }
 }

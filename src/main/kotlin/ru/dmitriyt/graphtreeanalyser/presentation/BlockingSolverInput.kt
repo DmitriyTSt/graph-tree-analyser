@@ -1,16 +1,38 @@
 package ru.dmitriyt.graphtreeanalyser.presentation
 
+import ru.dmitriyt.graphtreeanalyser.domain.Logger
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
 import kotlin.math.min
 
 sealed interface BlockingSolverInput {
 
-    fun provide(): List<String>
+    fun provide(partSize: Int): List<String>
 
-    class StdInInputProvider(private val partSize: Int) : BlockingSolverInput {
-        override fun provide(): List<String> {
+    class GengProvider(generator: String, n: Int) : BlockingSolverInput {
+
+        private val commandList = listOfNotNull(
+            "./$generator",
+            n.toString(),
+        ).apply {
+            Logger.d("generate command: ${this.joinToString(" ")}")
+        }
+
+        private val process = ProcessBuilder(*commandList.toTypedArray())
+            .directory(File(System.getProperty("user.dir"))).start()
+
+        private val reader = BufferedReader(
+            InputStreamReader(
+                process.inputStream
+            )
+        )
+
+        override fun provide(partSize: Int): List<String> {
             val graphs = mutableListOf<String>()
             repeat(partSize) {
-                readlnOrNull()?.let { graphs.add(it) } ?: run {
+                val mayBeGraph = synchronized(this) { reader.readLine() }
+                mayBeGraph?.takeIf { !it.startsWith(">") }?.takeIf { it.isNotEmpty() }?.let { graphs.add(it) } ?: run {
                     return@repeat
                 }
             }
@@ -19,13 +41,12 @@ sealed interface BlockingSolverInput {
     }
 
     class DataInputProvider(
-        private val partSize: Int,
         private val graphs: List<String>,
     ) : BlockingSolverInput {
         private var currentOffset: Int = 0
 
         @Synchronized
-        override fun provide(): List<String> {
+        override fun provide(partSize: Int): List<String> {
             if (currentOffset >= graphs.size) return emptyList()
 
             val taskGraphs = graphs.subList(currentOffset, min(currentOffset + partSize, graphs.size))
