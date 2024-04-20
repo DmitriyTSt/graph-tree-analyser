@@ -1,5 +1,6 @@
 package ru.dmitriyt.graphtreeanalyser.presentation
 
+import ru.dmitriyt.graphtreeanalyser.data.Graph
 import ru.dmitriyt.graphtreeanalyser.domain.algorithm.GraphCondition
 import ru.dmitriyt.graphtreeanalyser.domain.algorithm.GraphInvariant
 
@@ -65,8 +66,8 @@ data class ComplexAndCondition(
 
     constructor(vararg condition: GraphCondition) : this(condition.toList())
 
-    override fun check(graph6: String): Boolean {
-        return graphConditions.all { it.check(graph6) }
+    override fun check(graph: Graph): Boolean {
+        return graphConditions.all { it.check(graph) }
     }
 }
 
@@ -76,7 +77,7 @@ data class ComplexOrCondition(
 
     constructor(vararg condition: GraphCondition) : this(condition.toList())
 
-    override fun check(graph6: String): Boolean {
-        return graphConditions.any { it.check(graph6) }
+    override fun check(graph: Graph): Boolean {
+        return graphConditions.any { it.check(graph) }
     }
 }

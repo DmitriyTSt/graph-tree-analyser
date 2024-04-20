@@ -55,7 +55,7 @@ object TreeUtil {
         return d
     }
 
-    fun getTreeCenter(g: Graph): Int {
+    fun getTreeCenterVertexes(g: Graph): Set<Int> {
         val actualVertexes = g.mapList.keys.toMutableSet()
         while (actualVertexes.size > 2) {
             val vertexesToRemove = mutableListOf<Int>()
@@ -70,6 +70,11 @@ object TreeUtil {
                 actualVertexes.remove(vertex)
             }
         }
+        return actualVertexes
+    }
+
+    fun getTreeCenter(g: Graph): Int {
+        val actualVertexes = getTreeCenterVertexes(g)
 
         if (actualVertexes.size == 1) {
             return actualVertexes.first()

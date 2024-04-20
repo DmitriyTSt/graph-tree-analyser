@@ -33,7 +33,7 @@ class BlockingSolver(
     private var endTime = 0L
 
     suspend fun solve(): SolveResult = suspendCoroutine {
-        val cachedResult = SolveRepository.get(graphTaskInfo, n)
+        val cachedResult: SolveResult? = null //SolveRepository.get(graphTaskInfo, n)
         if (cachedResult != null) {
             it.resume(cachedResult)
             return@suspendCoroutine
