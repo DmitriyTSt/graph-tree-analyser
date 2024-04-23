@@ -7,6 +7,7 @@ import ru.dmitriyt.graphtreeanalyser.domain.model.GraphTaskInfo
 
 interface GraphInvariant {
     fun solve(graph6: String): Int {
+        Logger.i("\n")
         Logger.i(graph6)
         return solve(GraphCache[graph6])
     }

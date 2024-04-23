@@ -9,15 +9,17 @@ fun main(rawArgs: Array<String>): Unit = runBlocking {
 //    repeat(20) {
 //        val args = ArgsManager(rawArgs).parse()
     val args = Args(
-        n = 9,
-        isMulti = 9 > 10,
+        n = 12,
+        isMulti = 12 > 10,
     )
 
     graphs(n = args.n) {
         multiThreadingEnabled = args.isMulti
-        generate(generator = "gentreeg").filter(ReducedTreePackEquals2).apply {
-            calculateInvariant(ReducedTreePack2Type)
-        }
+        generate(generator = "gentreeg")
+            .filter(ReducedTreePackEquals2)
+            .apply {
+                calculateInvariant(ReducedTreePack2Type)
+            }
     }
 //    }
 }

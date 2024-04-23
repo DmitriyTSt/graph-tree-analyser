@@ -46,7 +46,7 @@ class BlockingSolver(
         startTime = System.currentTimeMillis()
         solver.run(
             inputProvider = {
-                val graphs = input.provide(partSize)
+                val graphs = input.read(partSize)
                 if (graphs.isNotEmpty()) {
                     val newTaskId = taskId.incrementAndGet()
                     total.getAndAdd(graphs.size)

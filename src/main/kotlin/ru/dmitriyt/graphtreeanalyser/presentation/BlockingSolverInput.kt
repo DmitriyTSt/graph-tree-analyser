@@ -8,7 +8,7 @@ import kotlin.math.min
 
 sealed interface BlockingSolverInput {
 
-    fun provide(partSize: Int): List<String>
+    fun read(partSize: Int): List<String>
 
     class GengProvider(generator: String, n: Int) : BlockingSolverInput {
 
@@ -28,7 +28,7 @@ sealed interface BlockingSolverInput {
             )
         )
 
-        override fun provide(partSize: Int): List<String> {
+        override fun read(partSize: Int): List<String> {
             val graphs = mutableListOf<String>()
             repeat(partSize) {
                 val mayBeGraph = synchronized(this) { reader.readLine() }
@@ -43,15 +43,18 @@ sealed interface BlockingSolverInput {
     class DataInputProvider(
         private val graphs: List<String>,
     ) : BlockingSolverInput {
+
         private var currentOffset: Int = 0
 
         @Synchronized
-        override fun provide(partSize: Int): List<String> {
+        override fun read(partSize: Int): List<String> {
             if (currentOffset >= graphs.size) return emptyList()
 
             val taskGraphs = graphs.subList(currentOffset, min(currentOffset + partSize, graphs.size))
             currentOffset += partSize
             return taskGraphs
         }
+
+
     }
 }

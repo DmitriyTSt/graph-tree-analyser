@@ -49,9 +49,9 @@ class SolveScope(
         return BlockingSolverInput.DataInputProvider(conditionResult.graphs)
     }
 
-    fun BlockingSolverInput.saveImages() {
-        val graphDrawer = GraphDrawer()
-        provide(Int.MAX_VALUE).forEach {
+    fun BlockingSolverInput.saveImages(path: String = GraphDrawer.PATH) {
+        val graphDrawer = GraphDrawer(path = path)
+        read(Int.MAX_VALUE).forEach {
             graphDrawer.drawImage(it)
         }
     }
